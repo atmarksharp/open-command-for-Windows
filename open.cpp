@@ -11,53 +11,44 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <tchar.h>
 #include <shellapi.h>
 
 void usage()
 {
-	::MessageBox(NULL, _T("usage: open.exe [filenames]"), _T("usage"), MB_OK);
-	exit(1);
+	printf("\nusage: open.exe [filename]\n");
 }
 
 void error(TCHAR *filename)
 {
-	TCHAR msg[MAX_PATH + 256];
-	_stprintf_s(msg, MAX_PATH + 256, _T("can't open file. filename=%s"), filename);
-	::MessageBox(NULL, msg, _T("error"), MB_OK);
-	exit(1);
+	printf("\n[Error] can't open file: %s\n", filename);
 }
 
 bool open(TCHAR *filename)
 {
-	HINSTANCE h;
-
-	h = ::ShellExecute(NULL, _T("open"), filename, NULL, NULL, SW_SHOW);
-	if ((int)h <= 32) {
+	HINSTANCE h = ::ShellExecute(NULL, _T("open"), filename, NULL, NULL, SW_SHOW);
+	if(32 > (intptr_t)h){
 		return false;
 	}
+
 	return true;
 }
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
-                     int       nCmdShow)
-{
-	bool rv;
-	int  i;
-
-	if (__argc == 1) usage();
-
-	for (i = 1; i < __argc; ++i) {
-		rv = open(__targv[i]);
-		if (!rv) {
-			error(__targv[i]);
-			exit(1);
-		}
+                     int       nCmdShow){
+	if (__argc == 1){
+		usage(); exit(1);
 	}
-	
+
+	TCHAR *filename = __targv[1];
+	bool flag = open(filename);
+	if(!flag){
+		error(filename); exit(1);
+	}
+
 	return 0;
 }
